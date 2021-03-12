@@ -1,5 +1,5 @@
 // Extention Elements
-let inkContentButton = document.getElementById("inkContent");
+const inkContentButton = document.getElementById('inkContent')
 
 // Global Vars
 let isInking = false
@@ -9,10 +9,10 @@ const setIsInking = inkingState => {
   chrome.storage.local.set({ isInking: inkingState }, () => {
     isInking = inkingState
     if (inkingState === true) {
-      inkContentButton.innerHTML = "Inking"
+      inkContentButton.innerHTML = 'Inking'
       inkContentButton.classList.add('active')
     } else {
-      inkContentButton.innerHTML = "Ink Content"
+      inkContentButton.innerHTML = 'Ink Content'
       inkContentButton.classList.remove('active')
     }
   })
@@ -23,13 +23,13 @@ chrome.storage.local.get('isInking', ({ isInking }) => {
   setIsInking(!!isInking)
 })
 
-// Functions
+// Extention Event Listeners
 inkContentButton.addEventListener('click', async () => {
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
 
   if (isInking) {
     setIsInking(false)
-    // TODO: remove event listeners here
+    chrome.tabs.sendMessage(tab.id, { id: 'END_INKING' })
     return
   }
 
@@ -43,18 +43,32 @@ inkContentButton.addEventListener('click', async () => {
   window.close()
 })
 
-function initInking() {
-  const trackCursor = e => {
-    let element = document.elementFromPoint(e.clientX, e.clientY)
+// Content Script Functions
+const initInking = () => {
+  const handleMouseMove = e => {
+    const element = document.elementFromPoint(e.clientX, e.clientY)
     console.log(element)
   }
 
+  const handleKeydown = e => {
+    if (e.key === 'Escape') {
+      removeEventListeners()
+      chrome.storage.local.set({ isInking: false })
+    }
+  }
+
+  const removeEventListeners = () => {
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('keydown', handleKeydown)
+  }
+
   window.focus()
-  document.addEventListener('mousemove', trackCursor)
-  document.addEventListener('keydown', function(e) {
-    if (e.key === "Escape") {
-      document.removeEventListener('mousemove', trackCursor)
-      // TODO setIsInking(false)
+  document.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('keydown', handleKeydown)
+
+  chrome.runtime.onMessage.addListener((request, _sender, _sendResponse) => {
+    if (request.id == 'END_INKING') {
+      removeEventListeners()
     }
   })
 }
