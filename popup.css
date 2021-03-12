@@ -1,0 +1,80 @@
+body {
+  --colour-primary: #009;
+  --colour-secondary: #800080;
+  --colour-text: #333;
+
+  width: 300px;
+  margin: 0;
+  padding: 10px;
+  background-color: #f8f8f8;
+  color: var(--colour-text);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.2;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: inline-block;
+  height: 30px;
+  margin-right: 2px;
+  vertical-align: top;
+}
+
+h1 {
+  display: inline-block;
+  margin: 0;
+  color: var(--colour-primary);
+  font-size: 16px;
+  line-height: 30px;
+  vertical-align: top;
+}
+
+hr {
+  height: 1px;
+  margin: 10px 0;
+  border: 0;
+  background: #c0c0c0;
+}
+
+button {
+  display: block;
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 7px 15px;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+  border: 1px solid var(--colour-primary);
+  border-radius: 0;
+  outline: none;
+  background: var(--colour-primary);
+  background-image: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+button.active {
+  border-color: var(--colour-secondary);
+  background: var(--colour-secondary);
+}
+
+button:hover:before, button:focus:before {
+  content: '';
+  display: block;
+  background: rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

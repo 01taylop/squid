@@ -1,0 +1,25 @@
+{
+  "name": "Squid: Inked",
+  "description": "A Chrome extension to 'ink' unwanted content.",
+  "version": "1.0.0",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/icon96.png",
+      "32": "images/icon96.png",
+      "48": "images/icon96.png",
+      "128": "images/icon96.png"
+    }
+  },
+  "icons": {
+    "16": "images/icon96.png",
+    "32": "images/icon96.png",
+    "48": "images/icon96.png",
+    "128": "images/icon96.png"
+  },
+  "manifest_version": 3
+}
