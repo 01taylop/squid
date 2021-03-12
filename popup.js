@@ -1,5 +1,5 @@
 // Extention Elements
-let inkContentButton = document.getElementById("inkContent");
+const inkContentButton = document.getElementById('inkContent')
 
 // Global Vars
 let isInking = false
@@ -9,52 +9,85 @@ const setIsInking = inkingState => {
   chrome.storage.local.set({ isInking: inkingState }, () => {
     isInking = inkingState
     if (inkingState === true) {
-      inkContentButton.innerHTML = "Inking"
+      inkContentButton.innerHTML = 'Inking'
       inkContentButton.classList.add('active')
     } else {
-      inkContentButton.innerHTML = "Ink Content"
+      inkContentButton.innerHTML = 'Ink Content'
       inkContentButton.classList.remove('active')
     }
   })
 }
 
-// Init
-chrome.storage.local.get('isInking', ({ isInking }) => {
-  setIsInking(!!isInking)
-})
+const getTabId = async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  return tab.id
+}
 
-// Functions
+// Init
+document.addEventListener('DOMContentLoaded', async () => {
+  const tabId = await getTabId()
+
+  chrome.storage.local.get('isInking', ({ isInking }) => {
+    setIsInking(!!isInking)
+  })
+
+  chrome.scripting.executeScript({
+    target: {
+      tabId,
+    },
+    function: initSquid,
+  })
+}, false)
+
+// Extention Event Listeners
 inkContentButton.addEventListener('click', async () => {
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tabId = await getTabId()
 
   if (isInking) {
     setIsInking(false)
-    // TODO: remove event listeners here
+    chrome.tabs.sendMessage(tabId, { id: 'DISABLE_INKING' })
     return
   }
 
   setIsInking(true)
-  chrome.scripting.executeScript({
-    target: {
-      tabId: tab.id,
-    },
-    function: initInking,
-  })
+  chrome.tabs.sendMessage(tabId, { id: 'ENABLE_INKING' })
   window.close()
 })
 
-function initInking() {
-  const trackCursor = e => {
-    let element = document.elementFromPoint(e.clientX, e.clientY)
-    console.log(element)
-  }
+// Content Script Functions
+const initSquid = () => {
+  if (!window.SQUID) {
+    window.SQUID = {}
 
-  window.focus()
-  document.addEventListener('mousemove', trackCursor)
-  document.addEventListener('keydown', function(e) {
-    if (e.key === "Escape") {
-      document.removeEventListener('mousemove', trackCursor)
-      // TODO setIsInking(false)
+    window.SQUID.handleMouseMove = e => {
+      const element = document.elementFromPoint(e.clientX, e.clientY)
+      console.log(element)
     }
-  })
+
+    window.SQUID.handleKeydown = e => {
+      if (e.key === 'Escape') {
+        window.SQUID.disableInking()
+        chrome.storage.local.set({ isInking: false })
+      }
+    }
+
+    window.SQUID.enableInking = () => {
+      window.focus()
+      document.addEventListener('mousemove', window.SQUID.handleMouseMove)
+      document.addEventListener('keydown', window.SQUID.handleKeydown)
+    }
+
+    window.SQUID.disableInking = () => {
+      document.removeEventListener('mousemove', window.SQUID.handleMouseMove)
+      document.removeEventListener('keydown', window.SQUID.handleKeydown)
+    }
+
+    chrome.runtime.onMessage.addListener((request, _sender, _sendResponse) => {
+      if (request.id == 'ENABLE_INKING') {
+        window.SQUID.enableInking()
+      } else if (request.id == 'DISABLE_INKING') {
+        window.SQUID.disableInking()
+      }
+    })
+  }
 }
