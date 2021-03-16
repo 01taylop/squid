@@ -85,9 +85,27 @@ const initSquid = () => {
   if (!window.SQUID) {
     window.SQUID = {}
 
+    window.SQUID.getElementToInk = (element, nodes) => {
+      console.log(element, nodes)
+      return null
+    }
+
     window.SQUID.handleMouseMove = e => {
-      const element = document.elementFromPoint(e.clientX, e.clientY)
-      console.log(element)
+      const elementAtPoint = document.elementFromPoint(e.clientX, e.clientY)
+
+      const nodes = []
+      let element = elementAtPoint
+      nodes.push(element)
+      while (element.parentNode) {
+        nodes.unshift(element.parentNode)
+        element = element.parentNode
+      }
+
+      let elementToInk = window.SQUID.getElementToInk(elementAtPoint, nodes)
+      if (elementToInk) {
+        console.log(elementToInk)
+        // getBoundingClientRect()
+      }
     }
 
     window.SQUID.handleKeydown = e => {
